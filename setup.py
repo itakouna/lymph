@@ -29,7 +29,7 @@ install_requires = [
 dependency_links = []
 
 if sys.version_info.major == 2:
-    install_requires.append('monotime>=1.0')
+    install_requires.append('Monotime>=1.0')
 elif sys.version_info.major == 3:
     # Installing Cython==0.20.1 for building gevent
     from setuptools.command.easy_install import main as easy_install
@@ -40,7 +40,7 @@ elif sys.version_info.major == 3:
 setup(
     name='lymph',
     url='http://github.com/deliveryhero/lymph/',
-    version='0.4.0',
+    version='0.5.0-dev',
     namespace_packages=['lymph'],
     packages=find_packages(),
     license=u'Apache License (2.0)',

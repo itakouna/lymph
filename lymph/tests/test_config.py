@@ -3,6 +3,7 @@ import textwrap
 import yaml
 
 from lymph.config import Configuration
+from lymph.exceptions import ConfigurationError
 
 
 class ConfigurationTests(unittest.TestCase):
@@ -56,6 +57,48 @@ class ConfigurationTests(unittest.TestCase):
         config.update({'a': 2})
         self.assertEqual(config.get('a'), 2)
         self.assertEqual(config.get('b.c'), 2)
+
+    def test_contains(self):
+        config = Configuration({'a': {'b': 1}})
+        self.assertTrue('a' in config)
+        self.assertFalse('foo' in config)
+        view = config.get('a')
+        self.assertTrue('b' in view)
+        self.assertFalse('foo' in view)
+
+    def test_env_replacement(self):
+        config = Configuration({
+            'replace': 'prefix_$(env.FOO_BAR)_suffix',
+            'type_conversion': 'prefix_$(env.FOURTYTWO)',
+            'keep_int': '$(env.FOURTYTWO)',
+            'keep_dict': '$(env.DICT)',
+            'no_parens': '$env.FOO_BAR',
+            'no_namespace': '$(FOO_BAR)',
+            'nested': '$(var.nested.foo)',
+        }, env={
+            'FOO_BAR': '42',
+            'FOURTYTWO': 42,
+            'DICT': {},
+        }, var=Configuration({
+            'nested': {
+                'foo': 1764,
+            }
+        }))
+        self.assertEqual(config.get('replace'), 'prefix_42_suffix')
+        self.assertEqual(config.get('type_conversion'), 'prefix_42')
+        self.assertEqual(config.get('keep_int'), 42)
+        self.assertEqual(config.get('keep_dict'), {})
+        self.assertEqual(config.get('no_parens'), '$env.FOO_BAR')
+        self.assertEqual(config.get('no_namespace'), '$(FOO_BAR)')
+        self.assertEqual(config.get('nested'), 1764)
+
+    def test_missing_env_replacement(self):
+        self.assertRaises(ConfigurationError, Configuration, {
+            'missing': '$(env.MISSING)'
+        }, env={})
+        self.assertRaises(ConfigurationError, Configuration, {
+            'bad_namespace': '$(env.FOO_BAR)',
+        }, other={})
 
 
 class ConfigurableThing(object):

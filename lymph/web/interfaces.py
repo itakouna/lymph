@@ -21,6 +21,11 @@ logger = logging.getLogger(__name__)
 class Request(DynamicCharsetRequestMixin, BaseRequest):
     default_charset = 'utf-8'
 
+    @property
+    def full_path(self):
+        full_path = super(Request, self).full_path
+        return full_path.rstrip('?')
+
 
 class WebServiceInterface(Interface):
     default_http_port = None
@@ -46,7 +51,11 @@ class WebServiceInterface(Interface):
 
     def get_description(self):
         description = super(WebServiceInterface, self).get_description()
+<<<<<<< HEAD
         description['http_endpoint'] = 'http://%s:%s' % (self.container.server.ip, self.http_port)
+=======
+        description['http_port'] = self.http_port
+>>>>>>> e4fe98597411ba98bb24b28380eb92ac1ab74e90
         return description
 
     def on_start(self):
@@ -69,11 +78,13 @@ class WebServiceInterface(Interface):
         super(WebServiceInterface, self).on_stop()
 
     def dispatch_request(self, request):
+        trace.set_id()
         logger.info('%s %s', request.method, request.path)
         urls = self.url_map.bind_to_environ(request.environ)
         request.urls = urls
         try:
             rule, kwargs = request.urls.match(return_rule=True)
+            self.container.http_request_hook(request, rule, kwargs)
             handler = self.get_handler(request, rule)
             if hasattr(handler, "dispatch"):
                 response = handler.dispatch(kwargs)

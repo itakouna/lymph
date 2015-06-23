@@ -10,6 +10,7 @@ import kombu.pools
 
 from lymph.events.base import BaseEventSystem
 from lymph.core.events import Event
+from lymph.utils.logging import setup_logger
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,9 @@ class KombuEventSystem(BaseEventSystem):
         self.serializer = serializer
         self.consumers_by_queue = {}
 
+    def on_start(self):
+        setup_logger('kombu')
+
     def on_stop(self, **kwargs):
         for consumer in self.consumers_by_queue.values():
             consumer.stop(**kwargs)
@@ -96,7 +100,10 @@ class KombuEventSystem(BaseEventSystem):
     def setup_consumer(self, handler):
         with self._get_connection() as conn:
             self.exchange(conn).declare()
-            queue = kombu.Queue(handler.queue_name, durable=True, auto_delete=handler.once)
+            if handler.broadcast:
+                queue = kombu.Queue(handler.queue_name, auto_delete=True, durable=False)
+            else:
+                queue = kombu.Queue(handler.queue_name, durable=True, auto_delete=handler.once)
             queue(conn).declare()
             for event_type in handler.event_types:
                 queue(conn).bind_to(exchange=self.exchange, routing_key=event_type)
