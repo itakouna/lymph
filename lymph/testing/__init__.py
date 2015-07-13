@@ -3,7 +3,6 @@ import unittest
 import warnings
 
 import gevent
-import random
 import six
 import mock
 
@@ -17,14 +16,13 @@ from lymph.core.rpc import ZmqRPCServer
 from lymph.core.messages import Message
 from lymph.discovery.static import StaticServiceRegistryHub
 from lymph.events.local import LocalEventSystem
-from lymph.exceptions import RemoteError
 from lymph.client import Client
 from lymph.utils.sockets import get_unused_port, create_socket
 
+from lymph.testing.mock_helpers import RpcMockTestCase, EventMockTestCase  # noqa
+
 import werkzeug.test
 from werkzeug.wrappers import BaseResponse
-
-from lymph.testing.mock_helpers import RpcMockTestCase, EventMockTestCase
 
 
 class MockServiceNetwork(object):

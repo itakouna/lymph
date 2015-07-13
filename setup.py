@@ -27,31 +27,26 @@ install_requires = [
     'pytz==2015.4',
 ]
 
-dependency_links = []
-
 if sys.version_info.major == 2:
     install_requires.append('Monotime>=1.0')
 elif sys.version_info.major == 3:
-    # Installing Cython==0.20.1 for building gevent
-    from setuptools.command.easy_install import main as easy_install
-    easy_install(['Cython==0.20.1'])
-    dependency_links.append(
-        'git+https://github.com/gevent/gevent.git#egg=gevent-1.0.1')
+    install_requires.remove('gevent')
+    install_requires.append('gevent>=1.1a2')
 
 setup(
     name='lymph',
     url='http://github.com/deliveryhero/lymph/',
-    version='0.5.0-dev',
+    version='0.6.0-dev',
     namespace_packages=['lymph'],
     packages=find_packages(),
     license=u'Apache License (2.0)',
     author=u'Delivery Hero Holding GmbH',
     maintainer=u'Johannes Dollinger',
     maintainer_email=u'johannes.dollinger@deliveryhero.com',
+    description=u'a service framework',
     long_description=description,
     include_package_data=True,
     install_requires=install_requires,
-    dependency_links=dependency_links,
     extras_require={
         'sentry': ['raven'],
         'newrelic': ['newrelic'],
